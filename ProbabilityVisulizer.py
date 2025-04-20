@@ -125,12 +125,11 @@ def visualize_joint_distribution(choices, parameters):
     # Create figure
     fig = plt.figure(figsize=(12, 10))
     
-    # Create a 3D axes - the Axes3D import above ensures this works
-    # The projection='3d' argument is critical for enabling 3D capabilities
-    ax =Axes3D( plt.axes(projection='3d'))
+    # Create a 3D axes - FIXED: proper way to create 3D axes
+    ax = fig.add_subplot(111, projection='3d')
     
-    # Create custom red colormap
-    red_cmap = create_red_gradient_cmap()
+    # Create rainbow colormap
+    rainbow_cmap = create_colormap()
     
     # Normalize the values for coloring
     norm = mcolors.Normalize(vmin=np.min(pdf_x), vmax=np.max(pdf_x))
@@ -138,7 +137,7 @@ def visualize_joint_distribution(choices, parameters):
     # Create a color map for each x value
     colors = np.zeros((len(pdf_y), len(pdf_x), 4))  # RGBA values
     for i in range(len(pdf_x)):
-        color = red_cmap(norm(pdf_x[i]))
+        color = rainbow_cmap(norm(pdf_x[i]))
         for j in range(len(pdf_y)):
             colors[j, i] = color
     
@@ -150,7 +149,7 @@ def visualize_joint_distribution(choices, parameters):
     )
     
     # Add colorbar
-    sm = cm.ScalarMappable(cmap=red_cmap, norm=norm)
+    sm = cm.ScalarMappable(cmap=rainbow_cmap, norm=norm)
     sm.set_array([])
     cbar = fig.colorbar(sm, ax=ax, shrink=0.5, aspect=10)
     cbar.set_label(f'{dist1_name} Density')
@@ -164,13 +163,10 @@ def visualize_joint_distribution(choices, parameters):
     plt.tight_layout()
     plt.show()
 
-def create_red_gradient_cmap():
-    """Create a custom colormap that goes from light red to dark red.
-    Dark red corresponds to higher density values, light red to lower density values."""
-    return mcolors.LinearSegmentedColormap.from_list(
-        'red_gradient', 
-        [(1.0, 0.8, 0.8), (0.6, 0.0, 0.0)]  # Light red to dark red
-    )
+def create_colormap():
+    """Create a rainbow colormap for the visualization.
+    Uses the full spectrum of colors from purple/blue (low values) to red (high values)."""
+    return plt.cm.rainbow  # Using the built-in rainbow colormap
 
 def get_dist_name(choice):
     names = {
@@ -223,9 +219,8 @@ def main():
     print("----------------------------------------")
     print("This program creates a 3D visualization of the joint probability distribution")
     print("of two continuous distributions with user-defined parameters.")
-    print("The visualization will show a colored x-axis, with dark red corresponding")
-    print("to x-values with higher densities; lighter shades of red will correspond to")
-    print("x-values with lower densities.")
+    print("The visualization will show a colored x-axis with a rainbow gradient,")
+    print("with colors ranging from purple/blue (low density) to red (high density).")
     
     choices, parameters = get_distribution_choice()
     visualize_joint_distribution(choices, parameters)
